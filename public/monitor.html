@@ -5,14 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Base</title>
     <script>
-        const socket = new WebSocket("wss://h-heas.onrender.com"); // WebSocket connection
+        const socket = new WebSocket("wss://h-heas.onrender.com");
+
+        socket.onopen = () => console.log("Connected to WebSocket.");
 
         socket.onmessage = async (event) => {
-            const data = await event.data.text(); // Convert Blob to text
-            const parsedData = JSON.parse(data);
-
-            alert(`🚨 Emergency Alert from ${parsedData.sender}: ${parsedData.alert}`);
+            try {
+                const data = await event.data.text(); // Convert Blob to text
+                const parsedData = JSON.parse(data);
+                console.log("Received:", parsedData);
+                
+                // Show alert with sender's name
+                alert(`🚨 Emergency Alert from ${parsedData.sender}: ${parsedData.alert}`);
+            } catch (error) {
+                console.error("Error processing WebSocket message:", error);
+            }
         };
+
+        socket.onclose = () => console.log("Disconnected from WebSocket.");
     </script>
 </head>
 <body>
