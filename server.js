@@ -13,13 +13,14 @@ app.use(express.static(path.join(__dirname, "public")));
 wss.on("connection", (ws) => {
     console.log("User connected to WebSocket.");
 
-    ws.on("message", (message) => {
-        console.log("Emergency Signal Received: " + message);
+    ws.on("message", async (message) => {
+        const data = JSON.parse(message);
+        console.log(`Emergency Signal from ${data.sender}: ${data.alert}`);
 
-        // Send alert message to all connected clients
+        // Send alert message to all connected monitoring clients
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
-                client.send(message);
+                client.send(JSON.stringify({ sender: data.sender, alert: data.alert }));
             }
         });
     });
