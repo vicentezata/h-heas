@@ -4,29 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Base</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        h2 {
+            color: #dc3545;
+        }
+        #log {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            overflow-y: auto;
+            height: 300px;
+        }
+        .alert {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 5px solid red;
+            background: #ffcccc;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>🚨 Monitoring Base 🚨</h2>
+    <p>Waiting for emergency signals...</p>
+
+    <div id="log">
+        <p><i>No alerts yet...</i></p>
+    </div>
+
+    <audio id="alertSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
 
-        socket.onopen = () => console.log("Connected to WebSocket.");
+        socket.onmessage = (event) => {
+            const data = event.data;
+            const logDiv = document.getElementById("log");
 
-        socket.onmessage = async (event) => {
-            try {
-                const data = await event.data.text(); // Convert Blob to text
-                const parsedData = JSON.parse(data);
-                console.log("Received:", parsedData);
-                
-                // Show alert with sender's name
-                alert(`🚨 Emergency Alert from ${parsedData.sender}: ${parsedData.alert}`);
-            } catch (error) {
-                console.error("Error processing WebSocket message:", error);
-            }
+            // Play alert sound
+            document.getElementById("alertSound").play();
+
+            // Show pop-up alert
+            alert("🚨 Emergency Alert: " + data);
+
+            // Add log entry
+            const newAlert = document.createElement("div");
+            newAlert.classList.add("alert");
+            newAlert.innerText = "🚨 " + new Date().toLocaleTimeString() + " - " + data;
+            logDiv.prepend(newAlert);
         };
-
-        socket.onclose = () => console.log("Disconnected from WebSocket.");
     </script>
-</head>
-<body>
-    <h2>Monitoring Base</h2>
-    <p>Waiting for emergency signals...</p>
+
 </body>
 </html>
