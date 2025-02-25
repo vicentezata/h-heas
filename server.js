@@ -14,15 +14,19 @@ wss.on("connection", (ws) => {
     console.log("User connected to WebSocket.");
 
     ws.on("message", async (message) => {
-        const data = JSON.parse(message);
-        console.log(`Emergency Signal from ${data.sender}: ${data.alert}`);
+        try {
+            const data = JSON.parse(message);
+            console.log(`Emergency Signal from ${data.sender}: ${data.alert}`);
 
-        // Send alert message to all connected monitoring clients
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify({ sender: data.sender, alert: data.alert }));
-            }
-        });
+            // Send alert message to all connected clients
+            wss.clients.forEach(client => {
+                if (client !== ws && client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({ sender: data.sender, alert: data.alert }));
+                }
+            });
+        } catch (error) {
+            console.error("Error processing message:", error);
+        }
     });
 
     ws.on("close", () => console.log("User disconnected."));
