@@ -10,6 +10,7 @@
     </style>
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
+        const alertSound = new Audio("alert.mp3"); // Load alert sound
 
         socket.onopen = () => {
             console.log("Connected to WebSocket as Monitoring Base.");
@@ -21,6 +22,9 @@
                 const data = await event.data.text();
                 const parsedData = JSON.parse(data);
                 console.log("Received Alert:", parsedData);
+
+                // Play sound
+                alertSound.play();
 
                 // Show pop-up alert
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
