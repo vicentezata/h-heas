@@ -37,26 +37,51 @@
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
 
+        socket.onopen = () => {
+            console.log("✅ Connected to WebSocket");
+        };
+
         socket.onmessage = (event) => {
-            const data = JSON.parse(event.data); // Convert JSON data to object
-            const alertMessage = `🚨 Emergency Alert - ${data.sender} needs help!`;
+            console.log("📩 Message received:", event.data);
 
-            // Play alert sound
-            const audio = new Audio("/alert.mp3");
-            audio.play();
+            try {
+                // Parse received JSON data
+                const data = JSON.parse(event.data);
+                if (!data.sender || !data.alert) {
+                    console.error("⚠️ Invalid data format received:", data);
+                    return;
+                }
 
-            // Show pop-up alert
-            alert(alertMessage);
+                const alertMessage = `🚨 Emergency Alert - ${data.sender} needs help!`;
 
-            // Log the alert in the log box
-            const logBox = document.getElementById("logBox");
-            const alertEntry = document.createElement("div");
-            alertEntry.className = "alert-entry";
-            alertEntry.innerText = `${new Date().toLocaleTimeString()} - ${alertMessage}`;
-            logBox.appendChild(alertEntry);
+                // Play alert sound
+                const audio = new Audio("/alert.mp3");
+                audio.play().catch(err => console.error("🔇 Sound Error:", err));
 
-            // Auto-scroll to the latest alert
-            logBox.scrollTop = logBox.scrollHeight;
+                // Show pop-up alert
+                alert(alertMessage);
+
+                // Log the alert in the log box
+                const logBox = document.getElementById("logBox");
+                const alertEntry = document.createElement("div");
+                alertEntry.className = "alert-entry";
+                alertEntry.innerText = `${new Date().toLocaleTimeString()} - ${alertMessage}`;
+                logBox.appendChild(alertEntry);
+
+                // Auto-scroll to the latest alert
+                logBox.scrollTop = logBox.scrollHeight;
+
+            } catch (error) {
+                console.error("❌ Error processing message:", error);
+            }
+        };
+
+        socket.onclose = () => {
+            console.log("❌ Disconnected from WebSocket");
+        };
+
+        socket.onerror = (error) => {
+            console.error("⚠️ WebSocket Error:", error);
         };
     </script>
 </body>
