@@ -11,15 +11,18 @@
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
 
-        socket.onopen = () => console.log("Connected to WebSocket.");
+        socket.onopen = () => {
+            console.log("Connected to WebSocket as Monitoring Base.");
+            socket.send(JSON.stringify({ monitor: true })); // Identify as monitoring base
+        };
 
         socket.onmessage = async (event) => {
             try {
-                const data = await event.data.text(); // Convert Blob to text
+                const data = await event.data.text();
                 const parsedData = JSON.parse(data);
-                console.log("Received:", parsedData);
-                
-                // Show alert with sender's name
+                console.log("Received Alert:", parsedData);
+
+                // Show pop-up alert
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
             } catch (error) {
                 console.error("Error processing WebSocket message:", error);
