@@ -5,28 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Base</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-        }
-        #logBox {
-            width: 80%;
-            max-width: 500px;
-            height: 300px;
-            border: 1px solid #000;
-            overflow-y: auto;
-            padding: 10px;
-            margin: 20px auto;
-            background: #f8f8f8;
-        }
-        .alert-entry {
-            padding: 8px;
-            margin: 5px 0;
-            background: #ffcccc;
-            border: 1px solid #ff0000;
-            border-radius: 5px;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        #logBox { width: 80%; max-width: 500px; height: 300px; border: 1px solid #000; overflow-y: auto; padding: 10px; margin: 20px auto; background: #f8f8f8; }
+        .alert-entry { padding: 8px; margin: 5px 0; background: #ffcccc; border: 1px solid #ff0000; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -41,12 +22,14 @@
             console.log("✅ Connected to WebSocket");
         };
 
-        socket.onmessage = (event) => {
-            console.log("📩 Message received:", event.data);
+        socket.onmessage = async (event) => {
+            console.log("📩 Message received:", event);
 
             try {
-                // Parse received JSON data
-                const data = JSON.parse(event.data);
+                const textData = await event.data.text(); // Convert Blob to text
+                console.log("📄 Received Text:", textData);
+                
+                const data = JSON.parse(textData); // Parse JSON
                 if (!data.sender || !data.alert) {
                     console.error("⚠️ Invalid data format received:", data);
                     return;
