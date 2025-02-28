@@ -12,7 +12,7 @@
 </head>
 <body>
     <h2>Monitoring Base</h2>
-    <p>Waiting for emergency signals...</p>
+    <p id="status">🔄 Connecting...</p>
     <div id="log"></div>
 
     <script>
@@ -21,6 +21,7 @@
 
         socket.onopen = () => {
             console.log("✅ Connected to WebSocket.");
+            document.getElementById("status").innerText = "✅ Connected to WebSocket";
         };
 
         socket.onmessage = async (event) => {
@@ -46,7 +47,15 @@
             }
         };
 
-        socket.onclose = () => console.log("❌ Disconnected from WebSocket.");
+        socket.onerror = (error) => {
+            console.error("❌ WebSocket Error:", error);
+            document.getElementById("status").innerText = "⚠️ WebSocket Error";
+        };
+
+        socket.onclose = () => {
+            console.log("❌ Disconnected from WebSocket.");
+            document.getElementById("status").innerText = "❌ Disconnected";
+        };
     </script>
 </body>
 </html>
