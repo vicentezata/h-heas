@@ -36,19 +36,14 @@
         let alertSound = new Audio("alert.mp3"); // Load alert sound
         const logContainer = document.getElementById("logContainer");
 
-        if (!logContainer) {
-            console.error("⚠️ logContainer not found in HTML!");
-        }
-
         let soundEnabled = false;
-        let firstAlertTriggered = false;
 
-        // ✅ Enable sound on user interaction
+        // ✅ Enable sound but DO NOT PLAY IT immediately
         document.body.addEventListener("click", () => {
             if (!soundEnabled) {
-                alertSound.play().catch(() => console.log("🔊 Sound enabled after user interaction."));
                 alertSound.muted = false;
                 soundEnabled = true;
+                console.log("🔊 Sound enabled. Ready for alerts.");
             }
         });
 
@@ -69,15 +64,11 @@
 
                 console.log("🚨 Received Alert:", parsedData);
 
+                // ✅ Play sound ONLY when an actual alert is received
                 if (soundEnabled) {
-                    if (!firstAlertTriggered) {
-                        await alertSound.play().catch(err => console.log("🔊 First alert sound error:", err));
-                        firstAlertTriggered = true;
-                    } else {
-                        alertSound.pause();
-                        alertSound.currentTime = 0;
-                        alertSound.play().catch(err => console.log("Error playing sound", err));
-                    }
+                    alertSound.pause();
+                    alertSound.currentTime = 0;
+                    alertSound.play().catch(err => console.log("Error playing sound", err));
                 }
 
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
