@@ -33,8 +33,18 @@
 
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
-        const alertSound = new Audio("alert.mp3"); // Load alert sound
+        let alertSound = new Audio("alert.mp3"); // Load alert sound
         const logContainer = document.getElementById("logContainer");
+        let soundEnabled = false; // Ensures sound plays after first interaction
+
+        // Enable sound on first user interaction (click)
+        document.body.addEventListener("click", () => {
+            if (!soundEnabled) {
+                alertSound.play().catch(err => console.log("Sound blocked by browser", err));
+                soundEnabled = true;
+                console.log("🔊 Sound enabled!");
+            }
+        });
 
         socket.onopen = () => {
             console.log("Connected to WebSocket as Monitoring Base.");
@@ -54,8 +64,12 @@
 
                 console.log("Received Alert:", parsedData);
 
-                // Play sound
-                alertSound.play().catch(err => console.log("Error playing sound", err));
+                // Play sound only if enabled
+                if (soundEnabled) {
+                    alertSound.pause();
+                    alertSound.currentTime = 0;
+                    alertSound.play().catch(err => console.log("Error playing sound", err));
+                }
 
                 // Show pop-up alert
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
