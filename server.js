@@ -1,44 +1,29 @@
-const WebSocket = require("ws"); // Import WebSocket
-const socket = new WebSocket("ws://localhost:8080"); // Local testing
+const express = require("express");
+const http = require("http");
+const WebSocket = require("ws");
+
+const app = express();
+const server = http.createServer(app); // Create HTTP server
+
+const wss = new WebSocket.Server({ server }); // Attach WebSocket server
 
 wss.on("connection", (ws) => {
-    console.log("✅ User connected.");
+    console.log("✅ WebSocket connected!");
 
     ws.on("message", (message) => {
-        try {
-            const parsedMessage = JSON.parse(message);
+        console.log("🚨 Emergency Signal:", message);
 
-            if (parsedMessage.monitor) {
-                console.log("📡 Monitoring Base connected.");
-                ws.isMonitor = true;
-            } else if (parsedMessage.recipient) {
-                console.log(`📨 Sending reply to ${parsedMessage.recipient}`);
-
-                // ✅ Send automatic reply to the sender
-                wss.clients.forEach(client => {
-                    if (client.readyState === WebSocket.OPEN && !client.isMonitor) {
-                        client.send(JSON.stringify({
-                            sender: "Monitoring Base",
-                            alert: parsedMessage.response
-                        }));
-                    }
-                });
-            } else {
-                console.log("🚨 Emergency Signal Received:", parsedMessage);
-
-                // ✅ Send alert to all monitoring bases
-                wss.clients.forEach(client => {
-                    if (client.isMonitor && client.readyState === WebSocket.OPEN) {
-                        client.send(JSON.stringify(parsedMessage));
-                    }
-                });
+        // Broadcast to all connected clients
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(message);
             }
-        } catch (error) {
-            console.error("❌ Error processing message:", error);
-        }
+        });
     });
 
-    ws.on("close", () => console.log("❌ User disconnected."));
+    ws.on("close", () => console.log("❌ WebSocket disconnected."));
 });
 
-console.log("🚀 WebSocket server running on ws://localhost:8080");
+// Start the server
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
