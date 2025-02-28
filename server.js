@@ -19,6 +19,7 @@ wss.on("connection", (ws) => {
 
         try {
             const data = JSON.parse(message);
+            console.log("🔍 Parsed Data:", data);
 
             if (!data.sender || !data.alert) {
                 console.warn("⚠️ Invalid message format:", data);
