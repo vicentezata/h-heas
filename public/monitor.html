@@ -35,14 +35,14 @@
         const socket = new WebSocket("wss://h-heas.onrender.com");
         let alertSound = new Audio("alert.mp3"); // Load alert sound
         const logContainer = document.getElementById("logContainer");
-        let soundEnabled = false; // Ensures sound plays after first interaction
+        let soundEnabled = false; // Ensures sound plays only when alerts arrive
 
-        // Enable sound on first user interaction (click)
+        // Enable sound interaction (but do not play yet)
         document.body.addEventListener("click", () => {
             if (!soundEnabled) {
-                alertSound.play().catch(err => console.log("Sound blocked by browser", err));
+                alertSound.muted = false; // Ensure sound is unmuted
                 soundEnabled = true;
-                console.log("🔊 Sound enabled!");
+                console.log("🔊 Sound enabled, but will only play on alerts.");
             }
         });
 
@@ -64,7 +64,7 @@
 
                 console.log("Received Alert:", parsedData);
 
-                // Play sound only if enabled
+                // Play sound only if user has enabled it
                 if (soundEnabled) {
                     alertSound.pause();
                     alertSound.currentTime = 0;
