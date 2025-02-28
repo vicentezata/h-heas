@@ -26,9 +26,16 @@
             try {
                 const data = await event.data.text();
                 const parsedData = JSON.parse(data);
+
+                // ✅ Check if valid data is received
+                if (!parsedData.sender || !parsedData.alert) {
+                    console.warn("Invalid alert received:", parsedData);
+                    return; // Ignore invalid messages
+                }
+
                 console.log("Received Alert:", parsedData);
 
-                // Play sound automatically
+                // Play sound
                 alertSound.play().catch(err => console.log("Error playing sound", err));
 
                 // Show pop-up alert
