@@ -1,5 +1,5 @@
 const WebSocket = require("ws"); // Import WebSocket
-const wss = new WebSocket.Server({ port: 8080 }); // Create WebSocket server on port 8080
+const socket = new WebSocket("ws://localhost:8080"); // Local testing
 
 wss.on("connection", (ws) => {
     console.log("✅ User connected.");
