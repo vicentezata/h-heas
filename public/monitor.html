@@ -35,20 +35,19 @@
         const socket = new WebSocket("wss://h-heas.onrender.com");
         let alertSound = new Audio("alert.mp3"); // Load alert sound
         const logContainer = document.getElementById("logContainer");
-        let soundEnabled = false; // Ensures sound plays only when alerts arrive
+        let soundEnabled = false;
 
-        // Enable sound interaction (but do not play yet)
         document.body.addEventListener("click", () => {
             if (!soundEnabled) {
-                alertSound.muted = false; // Ensure sound is unmuted
+                alertSound.muted = false;
                 soundEnabled = true;
-                console.log("🔊 Sound enabled, but will only play on alerts.");
+                console.log("🔊 Sound enabled.");
             }
         });
 
         socket.onopen = () => {
             console.log("Connected to WebSocket as Monitoring Base.");
-            socket.send(JSON.stringify({ monitor: true })); // Identify as monitoring base
+            socket.send(JSON.stringify({ monitor: true }));
         };
 
         socket.onmessage = async (event) => {
@@ -56,32 +55,35 @@
                 const data = await event.data.text();
                 const parsedData = JSON.parse(data);
 
-                // ✅ Check if valid data is received
                 if (!parsedData.sender || !parsedData.alert) {
                     console.warn("Invalid alert received:", parsedData);
-                    return; // Ignore invalid messages
+                    return;
                 }
 
                 console.log("Received Alert:", parsedData);
 
-                // Play sound only if user has enabled it
                 if (soundEnabled) {
                     alertSound.pause();
                     alertSound.currentTime = 0;
                     alertSound.play().catch(err => console.log("Error playing sound", err));
                 }
 
-                // Show pop-up alert
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
 
-                // Add alert to log box
                 const logEntry = document.createElement("div");
                 logEntry.classList.add("log-entry");
                 logEntry.innerText = `🕒 ${new Date().toLocaleTimeString()} - 🚨 ${parsedData.sender} ${parsedData.alert}`;
                 logContainer.appendChild(logEntry);
-
-                // Auto-scroll to the latest entry
                 logContainer.scrollTop = logContainer.scrollHeight;
+
+                // ✅ SEND AUTOMATIC REPLY BACK TO SENDER
+                const replyMessage = {
+                    recipient: parsedData.sender, 
+                    response: "Help is on the way!"
+                };
+                socket.send(JSON.stringify(replyMessage));
+                console.log("✅ Reply sent:", replyMessage);
+
             } catch (error) {
                 console.error("Error processing WebSocket message:", error);
             }
