@@ -19,8 +19,15 @@
         const socket = new WebSocket("wss://h-heas.onrender.com");
         const alertSound = new Audio("alert.mp3");
 
+        function logMessage(msg) {
+            console.log(msg);
+            const logBox = document.getElementById("log");
+            logBox.innerHTML += `<p>${msg}</p>`;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
         socket.onopen = () => {
-            console.log("✅ Connected to WebSocket.");
+            logMessage("✅ Connected to WebSocket.");
             document.getElementById("status").innerText = "✅ Connected to WebSocket";
         };
 
@@ -28,7 +35,7 @@
             try {
                 const data = await event.data.text();
                 const parsedData = JSON.parse(data);
-                console.log("📩 Received Alert:", parsedData);
+                logMessage(`📩 Received Alert: ${JSON.stringify(parsedData)}`);
 
                 if (!parsedData.sender || !parsedData.alert) return;
 
@@ -37,11 +44,6 @@
 
                 // Show pop-up
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
-
-                // Append to log box
-                const logBox = document.getElementById("log");
-                logBox.innerHTML += `<p><strong>${parsedData.sender}:</strong> ${parsedData.alert}</p>`;
-                logBox.scrollTop = logBox.scrollHeight;
             } catch (error) {
                 console.error("❌ Error processing message:", error);
             }
@@ -53,7 +55,7 @@
         };
 
         socket.onclose = () => {
-            console.log("❌ Disconnected from WebSocket.");
+            logMessage("❌ Disconnected from WebSocket.");
             document.getElementById("status").innerText = "❌ Disconnected";
         };
     </script>
