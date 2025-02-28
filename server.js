@@ -4,9 +4,9 @@ const WebSocket = require("ws");
 const path = require("path");
 
 const app = express();
-const server = http.createServer(app); // Create HTTP server
+const server = http.createServer(app);
 
-// Serve static files (like monitor.html) from the 'public' folder
+// Serve static files (monitor.html)
 app.use(express.static(path.join(__dirname, "public")));
 
 const wss = new WebSocket.Server({ server });
@@ -15,14 +15,29 @@ wss.on("connection", (ws) => {
     console.log("✅ WebSocket connected!");
 
     ws.on("message", (message) => {
-        console.log("🚨 Emergency Signal:", message);
+        console.log("🚨 Emergency Signal Received:", message);
 
-        // Broadcast the alert to all monitoring clients
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(message);
-            }
-        });
+        try {
+            const data = JSON.parse(message);
+
+            // Broadcast alert to all monitoring clients
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({
+                        sender: data.sender,
+                        alert: data.alert
+                    }));
+                }
+            });
+
+            // ✅ Send automatic response back to sender
+            ws.send(JSON.stringify({
+                response: `🚔 Help is on the way, ${data.sender}! Stay safe.`
+            }));
+
+        } catch (error) {
+            console.error("❌ Error parsing message:", error);
+        }
     });
 
     ws.on("close", () => console.log("❌ WebSocket disconnected."));
