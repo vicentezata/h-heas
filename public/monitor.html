@@ -1,95 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoring Base</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        h2 { color: red; }
-        #logContainer {
-            width: 80%;
-            max-width: 600px;
-            height: 300px;
-            margin: 20px auto;
-            padding: 10px;
-            border: 2px solid black;
-            background: #f8f8f8;
-            overflow-y: auto;
-            text-align: left;
+<script>
+    const socket = new WebSocket("wss://h-heas.onrender.com");
+    let alertSound = new Audio("alert.mp3"); // Load alert sound
+    const logContainer = document.getElementById("logContainer");
+    let soundEnabled = false;
+    let firstAlertTriggered = false;
+
+    // Preload and enable sound on user interaction
+    document.body.addEventListener("click", () => {
+        if (!soundEnabled) {
+            alertSound.play().catch(() => console.log("🔊 Sound enabled after user interaction."));
+            alertSound.muted = false;
+            soundEnabled = true;
         }
-        .log-entry {
-            padding: 5px;
-            border-bottom: 1px solid #ddd;
-        }
-    </style>
-</head>
-<body>
-    <h2>Monitoring Base</h2>
-    <p>Waiting for emergency signals...</p>
+    });
 
-    <!-- Log Box -->
-    <div id="logContainer"></div>
+    socket.onopen = () => {
+        console.log("Connected to WebSocket as Monitoring Base.");
+        socket.send(JSON.stringify({ monitor: true }));
+    };
 
-    <script>
-        const socket = new WebSocket("wss://h-heas.onrender.com");
-        let alertSound = new Audio("alert.mp3"); // Load alert sound
-        const logContainer = document.getElementById("logContainer");
-        let soundEnabled = false;
+    socket.onmessage = async (event) => {
+        try {
+            const data = await event.data.text();
+            const parsedData = JSON.parse(data);
 
-        document.body.addEventListener("click", () => {
-            if (!soundEnabled) {
-                alertSound.muted = false;
-                soundEnabled = true;
-                console.log("🔊 Sound enabled.");
+            if (!parsedData.sender || !parsedData.alert) {
+                console.warn("Invalid alert received:", parsedData);
+                return;
             }
-        });
 
-        socket.onopen = () => {
-            console.log("Connected to WebSocket as Monitoring Base.");
-            socket.send(JSON.stringify({ monitor: true }));
-        };
+            console.log("Received Alert:", parsedData);
 
-        socket.onmessage = async (event) => {
-            try {
-                const data = await event.data.text();
-                const parsedData = JSON.parse(data);
-
-                if (!parsedData.sender || !parsedData.alert) {
-                    console.warn("Invalid alert received:", parsedData);
-                    return;
-                }
-
-                console.log("Received Alert:", parsedData);
-
-                if (soundEnabled) {
+            if (soundEnabled) {
+                if (!firstAlertTriggered) {
+                    // ✅ Force play the first alert sound
+                    await alertSound.play().catch(err => console.log("🔊 First alert sound error:", err));
+                    firstAlertTriggered = true;
+                } else {
+                    // ✅ Play normally for subsequent alerts
                     alertSound.pause();
                     alertSound.currentTime = 0;
                     alertSound.play().catch(err => console.log("Error playing sound", err));
                 }
-
-                alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
-
-                const logEntry = document.createElement("div");
-                logEntry.classList.add("log-entry");
-                logEntry.innerText = `🕒 ${new Date().toLocaleTimeString()} - 🚨 ${parsedData.sender} ${parsedData.alert}`;
-                logContainer.appendChild(logEntry);
-                logContainer.scrollTop = logContainer.scrollHeight;
-
-                // ✅ SEND AUTOMATIC REPLY BACK TO SENDER
-                const replyMessage = {
-                    recipient: parsedData.sender, 
-                    response: "Help is on the way!"
-                };
-                socket.send(JSON.stringify(replyMessage));
-                console.log("✅ Reply sent:", replyMessage);
-
-            } catch (error) {
-                console.error("Error processing WebSocket message:", error);
             }
-        };
 
-        socket.onclose = () => console.log("Disconnected from WebSocket.");
-    </script>
-</body>
-</html>
+            alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
+
+            const logEntry = document.createElement("div");
+            logEntry.classList.add("log-entry");
+            logEntry.innerText = `🕒 ${new Date().toLocaleTimeString()} - 🚨 ${parsedData.sender} ${parsedData.alert}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+
+            // ✅ SEND AUTOMATIC REPLY BACK TO SENDER
+            const replyMessage = {
+                recipient: parsedData.sender, 
+                response: "Help is on the way!"
+            };
+            socket.send(JSON.stringify(replyMessage));
+            console.log("✅ Reply sent:", replyMessage);
+
+        } catch (error) {
+            console.error("Error processing WebSocket message:", error);
+        }
+    };
+
+    socket.onclose = () => console.log("Disconnected from WebSocket.");
+</script>
