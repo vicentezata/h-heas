@@ -7,15 +7,34 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
         h2 { color: red; }
+        #logContainer {
+            width: 80%;
+            max-width: 600px;
+            height: 300px;
+            margin: 20px auto;
+            padding: 10px;
+            border: 2px solid black;
+            background: #f8f8f8;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .log-entry {
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
     <h2>Monitoring Base</h2>
     <p>Waiting for emergency signals...</p>
 
+    <!-- Log Box -->
+    <div id="logContainer"></div>
+
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
         const alertSound = new Audio("alert.mp3"); // Load alert sound
+        const logContainer = document.getElementById("logContainer");
 
         socket.onopen = () => {
             console.log("Connected to WebSocket as Monitoring Base.");
@@ -40,6 +59,15 @@
 
                 // Show pop-up alert
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
+
+                // Add alert to log box
+                const logEntry = document.createElement("div");
+                logEntry.classList.add("log-entry");
+                logEntry.innerText = `🕒 ${new Date().toLocaleTimeString()} - 🚨 ${parsedData.sender} ${parsedData.alert}`;
+                logContainer.appendChild(logEntry);
+
+                // Auto-scroll to the latest entry
+                logContainer.scrollTop = logContainer.scrollHeight;
             } catch (error) {
                 console.error("Error processing WebSocket message:", error);
             }
