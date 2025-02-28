@@ -7,25 +7,15 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
         h2 { color: red; }
-        button { padding: 10px 20px; margin-top: 10px; }
     </style>
 </head>
 <body>
     <h2>Monitoring Base</h2>
     <p>Waiting for emergency signals...</p>
-    <button onclick="enableSound()">🔊 Enable Sound</button>
 
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
         const alertSound = new Audio("alert.mp3"); // Load alert sound
-
-        let soundEnabled = false; // Tracks if the user enabled sound
-
-        function enableSound() {
-            alertSound.play().catch(err => console.log("Sound blocked by browser", err));
-            soundEnabled = true;
-            alert("🔊 Sound enabled! Emergency alerts will now play sound.");
-        }
 
         socket.onopen = () => {
             console.log("Connected to WebSocket as Monitoring Base.");
@@ -38,10 +28,8 @@
                 const parsedData = JSON.parse(data);
                 console.log("Received Alert:", parsedData);
 
-                // Play sound only if enabled
-                if (soundEnabled) {
-                    alertSound.play().catch(err => console.log("Error playing sound", err));
-                }
+                // Play sound automatically
+                alertSound.play().catch(err => console.log("Error playing sound", err));
 
                 // Show pop-up alert
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
