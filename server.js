@@ -15,19 +15,19 @@ wss.on("connection", (ws) => {
     console.log("✅ WebSocket connected!");
 
     ws.on("message", (message) => {
-        console.log("🚨 Emergency Signal Received:", message);
+        console.log("📩 Received message:", message);
 
         try {
             const data = JSON.parse(message);
 
             if (!data.sender || !data.alert) {
-                console.warn("⚠️ Invalid message format received:", data);
+                console.warn("⚠️ Invalid message format:", data);
                 return;
             }
 
             console.log(`📡 Broadcasting alert: ${data.sender} - ${data.alert}`);
 
-            // ✅ Broadcast alert to all connected clients (monitoring base)
+            // ✅ Send alert to all monitoring clients
             wss.clients.forEach(client => {
                 if (client !== ws && client.readyState === WebSocket.OPEN) {
                     client.send(JSON.stringify({
@@ -37,8 +37,9 @@ wss.on("connection", (ws) => {
                 }
             });
 
-            // ✅ Send automatic response back to sender
+            // ✅ Send automatic response to the sender
             if (ws.readyState === WebSocket.OPEN) {
+                console.log(`🔁 Sending response to ${data.sender}`);
                 ws.send(JSON.stringify({
                     response: `🚔 Help is on the way, ${data.sender}! Stay safe.`
                 }));
