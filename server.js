@@ -20,9 +20,16 @@ wss.on("connection", (ws) => {
         try {
             const data = JSON.parse(message);
 
-            // Broadcast alert to all monitoring clients
+            if (!data.sender || !data.alert) {
+                console.warn("⚠️ Invalid message format received:", data);
+                return;
+            }
+
+            console.log(`📡 Broadcasting alert: ${data.sender} - ${data.alert}`);
+
+            // ✅ Broadcast alert to all connected clients (monitoring base)
             wss.clients.forEach(client => {
-                if (client.readyState === WebSocket.OPEN) {
+                if (client !== ws && client.readyState === WebSocket.OPEN) {
                     client.send(JSON.stringify({
                         sender: data.sender,
                         alert: data.alert
@@ -31,9 +38,11 @@ wss.on("connection", (ws) => {
             });
 
             // ✅ Send automatic response back to sender
-            ws.send(JSON.stringify({
-                response: `🚔 Help is on the way, ${data.sender}! Stay safe.`
-            }));
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    response: `🚔 Help is on the way, ${data.sender}! Stay safe.`
+                }));
+            }
 
         } catch (error) {
             console.error("❌ Error parsing message:", error);
