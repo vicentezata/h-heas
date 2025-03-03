@@ -33,19 +33,24 @@
 
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
-        let alertSound = new Audio("alert.mp3"); // Load alert sound
+        let alertSound = new Audio("alert.mp3"); 
+        alertSound.preload = "auto"; // ✅ Preload sound
+
         const logContainer = document.getElementById("logContainer");
-
         let soundEnabled = false;
-
-        // ✅ Enable sound but DO NOT PLAY IT immediately
-        document.body.addEventListener("click", () => {
+        
+        // ✅ Enable sound on user interaction (Required for mobile browsers)
+        function enableSound() {
             if (!soundEnabled) {
                 alertSound.muted = false;
+                alertSound.play().catch(() => console.log("🔊 Sound enabled but not playing yet."));
                 soundEnabled = true;
-                console.log("🔊 Sound enabled. Ready for alerts.");
+                console.log("✅ Sound system enabled.");
             }
-        });
+        }
+
+        document.body.addEventListener("click", enableSound);
+        document.body.addEventListener("touchstart", enableSound); // ✅ Fix for Android phones
 
         socket.onopen = () => {
             console.log("✅ Connected to WebSocket as Monitoring Base.");
@@ -64,11 +69,13 @@
 
                 console.log("🚨 Received Alert:", parsedData);
 
-                // ✅ Play sound ONLY when an actual alert is received
+                // ✅ Ensure sound plays correctly
                 if (soundEnabled) {
                     alertSound.pause();
                     alertSound.currentTime = 0;
-                    alertSound.play().catch(err => console.log("Error playing sound", err));
+                    alertSound.play().catch(err => console.log("🔊 Error playing sound:", err));
+                } else {
+                    console.warn("🔇 Sound is disabled. User needs to interact first.");
                 }
 
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
