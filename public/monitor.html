@@ -33,24 +33,27 @@
 
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
-        let alertSound = new Audio("alert.mp3"); 
-        alertSound.preload = "auto"; // ✅ Preload sound
+        let alertSound = new Audio("alert.mp3");
+        alertSound.preload = "auto";
+        alertSound.loop = false;
 
         const logContainer = document.getElementById("logContainer");
         let soundEnabled = false;
-        
-        // ✅ Enable sound on user interaction (Required for mobile browsers)
+
+        // ✅ Function to enable sound on user interaction (Required for mobile)
         function enableSound() {
             if (!soundEnabled) {
                 alertSound.muted = false;
-                alertSound.play().catch(() => console.log("🔊 Sound enabled but not playing yet."));
+                alertSound.play().then(() => {
+                    console.log("✅ Sound unlocked!");
+                }).catch(err => console.log("🔇 Sound still blocked:", err));
                 soundEnabled = true;
-                console.log("✅ Sound system enabled.");
             }
         }
 
+        // ✅ Apply event listeners for Android/iOS compatibility
         document.body.addEventListener("click", enableSound);
-        document.body.addEventListener("touchstart", enableSound); // ✅ Fix for Android phones
+        document.body.addEventListener("touchstart", enableSound, { passive: true });
 
         socket.onopen = () => {
             console.log("✅ Connected to WebSocket as Monitoring Base.");
@@ -69,13 +72,13 @@
 
                 console.log("🚨 Received Alert:", parsedData);
 
-                // ✅ Ensure sound plays correctly
+                // ✅ Ensure sound plays correctly (Android fix)
                 if (soundEnabled) {
                     alertSound.pause();
                     alertSound.currentTime = 0;
                     alertSound.play().catch(err => console.log("🔊 Error playing sound:", err));
                 } else {
-                    console.warn("🔇 Sound is disabled. User needs to interact first.");
+                    console.warn("🔇 Sound disabled. Tap the screen to enable.");
                 }
 
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
