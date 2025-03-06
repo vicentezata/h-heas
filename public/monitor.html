@@ -84,7 +84,7 @@
                 // ✅ SEND AUTOMATIC REPLY BACK TO SENDER
                 const replyMessage = {
                     recipient: parsedData.sender, 
-                    response: "Help is on the way!"
+                    response: "This is Barangay Balidbid Hall Personnel. We have received your emergency signal. Help is on the way!"
                 };
                 socket.send(JSON.stringify(replyMessage));
                 console.log("✅ Reply sent:", replyMessage);
