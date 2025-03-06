@@ -33,27 +33,19 @@
 
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
-        let alertSound = new Audio("alert.mp3");
-        alertSound.preload = "auto";
-        alertSound.loop = false;
-
+        let alertSound = new Audio("alert.mp3"); // Load alert sound
         const logContainer = document.getElementById("logContainer");
+
         let soundEnabled = false;
 
-        // ✅ Function to enable sound on user interaction (Required for mobile)
-        function enableSound() {
+        // ✅ Enable sound but DO NOT PLAY IT immediately
+        document.body.addEventListener("click", () => {
             if (!soundEnabled) {
                 alertSound.muted = false;
-                alertSound.play().then(() => {
-                    console.log("✅ Sound unlocked!");
-                }).catch(err => console.log("🔇 Sound still blocked:", err));
                 soundEnabled = true;
+                console.log("🔊 Sound enabled. Ready for alerts.");
             }
-        }
-
-        // ✅ Apply event listeners for Android/iOS compatibility
-        document.body.addEventListener("click", enableSound);
-        document.body.addEventListener("touchstart", enableSound, { passive: true });
+        });
 
         socket.onopen = () => {
             console.log("✅ Connected to WebSocket as Monitoring Base.");
@@ -72,13 +64,11 @@
 
                 console.log("🚨 Received Alert:", parsedData);
 
-                // ✅ Ensure sound plays correctly (Android fix)
+                // ✅ Play sound ONLY when an actual alert is received
                 if (soundEnabled) {
                     alertSound.pause();
                     alertSound.currentTime = 0;
-                    alertSound.play().catch(err => console.log("🔊 Error playing sound:", err));
-                } else {
-                    console.warn("🔇 Sound disabled. Tap the screen to enable.");
+                    alertSound.play().catch(err => console.log("Error playing sound", err));
                 }
 
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
