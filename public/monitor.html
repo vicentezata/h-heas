@@ -5,13 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Base</title>
     <style>
+        /* ✅ Background matches user design */
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
-            background: linear-gradient(-45deg, #1a237e, #283593, #3949ab, #5c6bc0);
+            height: 100vh;
+            background: linear-gradient(-45deg, #ff4e50, #fc913a, #f9d423, #8bc34a);
             background-size: 400% 400%;
             animation: gradientBG 10s ease infinite;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             color: white;
         }
 
@@ -22,10 +28,19 @@
         }
 
         h2 {
-            font-size: 24px;
+            font-size: 22px;
+            font-weight: bold;
+            text-transform: uppercase;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1.5s ease-in-out;
         }
 
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ✅ Styled Log Container */
         #logContainer {
             width: 90%;
             max-width: 600px;
@@ -44,11 +59,37 @@
             padding: 5px;
             border-bottom: 1px solid #ddd;
         }
+
+        /* ✅ Styled Alert Button */
+        button {
+            font-size: 18px;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            background: #ff5722;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        button:hover {
+            background: #ff3d00;
+            transform: scale(1.05);
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
-    <h2>Monitoring Base</h2>
-    <p>Waiting for emergency signals...</p>
+    <h2>House to House Emergency Alert System</h2>
+    <h2>( H - H E A S )</h2>
+    <p>Monitoring Base - Waiting for emergency signals...</p>
     <div id="logContainer"></div>
 
     <!-- 🔊 Audio alert for incoming emergency signals -->
