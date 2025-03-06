@@ -146,7 +146,7 @@
                 // ✅ Auto-Reply from Monitoring Base
                 const replyMessage = {
                     recipient: parsedData.sender, 
-                    response: "Help is on the way!"
+                    response: "This is the Balidbid Barangay Hall Personnel. We have received your emergency signal, and help is on the way!"
                 };
                 socket.send(JSON.stringify(replyMessage));
                 console.log("✅ Reply sent:", replyMessage);
