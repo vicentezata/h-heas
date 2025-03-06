@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Base</title>
     <style>
-        /* ✅ Background matches user design */
         body {
             font-family: Arial, sans-serif;
             text-align: center;
@@ -40,7 +39,6 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* ✅ Styled Log Container */
         #logContainer {
             width: 90%;
             max-width: 600px;
@@ -60,29 +58,34 @@
             border-bottom: 1px solid #ddd;
         }
 
-        /* ✅ Styled Alert Button */
-        button {
-            font-size: 18px;
-            padding: 15px 25px;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            background: #ff5722;
+        /* ✅ Custom Alert Modal */
+        #alertModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
             color: white;
-            font-weight: bold;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-            outline: none;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        button:hover {
+        #alertModal button {
+            font-size: 16px;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: #ff5722;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        #alertModal button:hover {
             background: #ff3d00;
-            transform: scale(1.05);
-            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        button:active {
-            transform: scale(0.95);
         }
     </style>
 </head>
@@ -92,13 +95,21 @@
     <p>Monitoring Base - Waiting for emergency signals...</p>
     <div id="logContainer"></div>
 
-    <!-- 🔊 Audio alert for incoming emergency signals -->
+    <!-- ✅ Hidden Alert Modal -->
+    <div id="alertModal">
+        <p id="alertMessage">🚨 Emergency Alert Received!</p>
+        <button onclick="closeModal()">OK</button>
+    </div>
+
+    <!-- 🔊 Emergency Alert Sound -->
     <audio id="alertSound" src="alert.mp3"></audio>
 
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
         const logContainer = document.getElementById("logContainer");
         const alertSound = document.getElementById("alertSound");
+        const alertModal = document.getElementById("alertModal");
+        const alertMessage = document.getElementById("alertMessage");
 
         socket.onopen = () => {
             console.log("✅ Connected to WebSocket as Monitoring Base.");
@@ -116,11 +127,13 @@
 
                 console.log("🚨 Received Alert:", parsedData);
 
-                // 🔊 Play Sound Alert
+                // 🔊 Play Sound Alert (Loop until modal is closed)
+                alertSound.loop = true;
                 alertSound.play().catch(error => console.error("🔊 Error playing sound:", error));
 
-                // 🔔 Show Alert Popup
-                alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
+                // ✅ Show Custom Alert Modal
+                alertMessage.innerText = `🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`;
+                alertModal.style.display = "block";
 
                 if (logContainer) {
                     const logEntry = document.createElement("div");
@@ -130,10 +143,10 @@
                     logContainer.scrollTop = logContainer.scrollHeight;
                 }
 
-                // ✅ Send an automatic reply back to the sender
+                // ✅ Auto-Reply from Monitoring Base
                 const replyMessage = {
                     recipient: parsedData.sender, 
-                    response: "This is Barangay Balidbid Hall Personnel. We have received your emergency signal. Help is on the way!"
+                    response: "Help is on the way!"
                 };
                 socket.send(JSON.stringify(replyMessage));
                 console.log("✅ Reply sent:", replyMessage);
@@ -144,6 +157,12 @@
         };
 
         socket.onclose = () => console.log("❌ Disconnected from WebSocket.");
+
+        function closeModal() {
+            alertModal.style.display = "none";
+            alertSound.pause();
+            alertSound.currentTime = 0; // Reset sound
+        }
     </script>
 </body>
 </html>
