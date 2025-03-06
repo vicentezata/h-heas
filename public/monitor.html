@@ -51,9 +51,13 @@
     <p>Waiting for emergency signals...</p>
     <div id="logContainer"></div>
 
+    <!-- 🔊 Audio alert for incoming emergency signals -->
+    <audio id="alertSound" src="alert.mp3"></audio>
+
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
         const logContainer = document.getElementById("logContainer");
+        const alertSound = document.getElementById("alertSound");
 
         socket.onopen = () => {
             console.log("✅ Connected to WebSocket as Monitoring Base.");
@@ -71,6 +75,10 @@
 
                 console.log("🚨 Received Alert:", parsedData);
 
+                // 🔊 Play Sound Alert
+                alertSound.play().catch(error => console.error("🔊 Error playing sound:", error));
+
+                // 🔔 Show Alert Popup
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
 
                 if (logContainer) {
@@ -81,7 +89,7 @@
                     logContainer.scrollTop = logContainer.scrollHeight;
                 }
 
-                // ✅ SEND AUTOMATIC REPLY BACK TO SENDER
+                // ✅ Send an automatic reply back to the sender
                 const replyMessage = {
                     recipient: parsedData.sender, 
                     response: "Help is on the way!"
