@@ -44,55 +44,19 @@
             padding: 5px;
             border-bottom: 1px solid #ddd;
         }
-
-        #enableSound {
-            margin-top: 20px;
-            font-size: 18px;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            background: #ff5722;
-            color: white;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        #enableSound:hover {
-            background: #ff3d00;
-        }
     </style>
 </head>
 <body>
     <h2>Monitoring Base</h2>
     <p>Waiting for emergency signals...</p>
-
-    <!-- Sound Enable Button -->
-    <button id="enableSound">🔊 Enable Sound</button>
-
-    <!-- Log Box -->
     <div id="logContainer"></div>
 
     <script>
         const socket = new WebSocket("wss://h-heas.onrender.com");
-        let alertSound = new Audio("alert.mp3"); // ✅ Load alert sound
         const logContainer = document.getElementById("logContainer");
-
-        let soundEnabled = false;
-        let firstAlertTriggered = false;
-
-        // ✅ Force enable sound on user interaction (Fixes Android issue)
-        document.getElementById("enableSound").addEventListener("click", () => {
-            alertSound.play().catch(() => console.log("🔊 Sound enabled after user tap."));
-            alertSound.muted = false;
-            soundEnabled = true;
-            document.getElementById("enableSound").innerText = "✅ Sound Enabled";
-            document.getElementById("enableSound").style.background = "#4CAF50";
-        });
 
         socket.onopen = () => {
             console.log("✅ Connected to WebSocket as Monitoring Base.");
-            socket.send(JSON.stringify({ monitor: true }));
         };
 
         socket.onmessage = async (event) => {
@@ -106,17 +70,6 @@
                 }
 
                 console.log("🚨 Received Alert:", parsedData);
-
-                if (soundEnabled) {
-                    if (!firstAlertTriggered) {
-                        await alertSound.play().catch(err => console.log("🔊 First alert sound error:", err));
-                        firstAlertTriggered = true;
-                    } else {
-                        alertSound.pause();
-                        alertSound.currentTime = 0;
-                        alertSound.play().catch(err => console.log("Error playing sound", err));
-                    }
-                }
 
                 alert(`🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`);
 
