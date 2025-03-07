@@ -73,20 +73,6 @@
     </form>
     <p class="error" id="errorMessage"></p>
 
-    <script>
-        function loginUser() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-
-            if (username === "H-HEAS" && password === "BALIDBID") {
-                sessionStorage.setItem("loggedIn", "true"); // Save login state
-                window.location.href = "monitor.html"; // Redirect to monitoring page
-                return false;
-            } else {
-                document.getElementById("errorMessage").textContent = "❌ Incorrect username or password!";
-                return false;
-            }
-        }
-    </script>
+   
 </body>
 </html>
