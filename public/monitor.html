@@ -58,7 +58,6 @@
             border-bottom: 1px solid #ddd;
         }
 
-        /* ✅ Custom Alert Modal */
         #alertModal {
             display: none;
             position: fixed;
@@ -88,7 +87,6 @@
             background: #ff3d00;
         }
 
-        /* Logout Button */
         #logoutButton {
             margin-top: 20px;
             padding: 10px 20px;
@@ -110,24 +108,20 @@
     <p>Monitoring Base - Waiting for emergency signals...</p>
     <div id="logContainer"></div>
 
-    <!-- ✅ Hidden Alert Modal -->
     <div id="alertModal">
         <p id="alertMessage">🚨 Emergency Alert Received!</p>
         <button onclick="closeModal()">OK</button>
     </div>
 
-    <!-- 🔊 Emergency & False Alarm Alert Sounds -->
     <audio id="alertSound" src="alert.mp3"></audio>
     <audio id="falseAlarmSound" src="false_alarm.mp3"></audio>
 
-    <!-- 🔓 Logout Button -->
     <button id="logoutButton" onclick="logout()">Logout</button>
 
     <script>
-        // ✅ Restrict Direct Access to this Page
         if (sessionStorage.getItem("loggedIn") !== "true") {
             alert("❌ Access Denied! Please login first.");
-            window.location.href = "login.html"; // Redirect to login page
+            window.location.href = "login.html";
         }
 
         const socket = new WebSocket("wss://h-heas.onrender.com");
@@ -153,7 +147,6 @@
 
                 console.log("🚨 Received Alert:", parsedData);
 
-                // 🔊 Play different sounds for emergency and false alarm
                 if (parsedData.alert.includes("False Alarm")) {
                     falseAlarmSound.loop = true;
                     falseAlarmSound.play().catch(error => console.error("🔊 Error playing false alarm sound:", error));
@@ -164,7 +157,6 @@
                     alertMessage.innerText = `🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`;
                 }
 
-                // ✅ Show Custom Alert Modal
                 alertModal.style.display = "block";
 
                 if (logContainer) {
@@ -174,6 +166,14 @@
                     logContainer.appendChild(logEntry);
                     logContainer.scrollTop = logContainer.scrollHeight;
                 }
+
+                const response = {
+                    recipient: parsedData.sender,
+                    message: `📢 Monitoring Base has received your alert: ${parsedData.alert}`,
+                    timestamp: new Date().toISOString()
+                };
+                socket.send(JSON.stringify(response));
+                console.log("✅ Sent response:", response);
             } catch (error) {
                 console.error("❌ Error processing WebSocket message:", error);
             }
@@ -181,13 +181,10 @@
 
         function closeModal() {
             alertModal.style.display = "none";
-
-            // Stop both sounds when OK is clicked
             alertSound.pause();
-            alertSound.currentTime = 0; // Reset emergency alert sound
-
+            alertSound.currentTime = 0;
             falseAlarmSound.pause();
-            falseAlarmSound.currentTime = 0; // Reset false alarm sound
+            falseAlarmSound.currentTime = 0;
         }
 
         function logout() {
