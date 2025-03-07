@@ -155,14 +155,16 @@
 
                 // 🔊 Play different sounds for emergency and false alarm
                 if (parsedData.alert.includes("False Alarm")) {
+                    falseAlarmSound.loop = true;
                     falseAlarmSound.play().catch(error => console.error("🔊 Error playing false alarm sound:", error));
+                    alertMessage.innerText = `⚠️ False Alarm - ${parsedData.sender} ${parsedData.alert}`;
                 } else {
                     alertSound.loop = true;
-                    alertSound.play().catch(error => console.error("🔊 Error playing sound:", error));
+                    alertSound.play().catch(error => console.error("🔊 Error playing emergency sound:", error));
+                    alertMessage.innerText = `🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`;
                 }
 
                 // ✅ Show Custom Alert Modal
-                alertMessage.innerText = `🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`;
                 alertModal.style.display = "block";
 
                 if (logContainer) {
@@ -179,8 +181,13 @@
 
         function closeModal() {
             alertModal.style.display = "none";
+
+            // Stop both sounds when OK is clicked
             alertSound.pause();
-            alertSound.currentTime = 0;
+            alertSound.currentTime = 0; // Reset emergency alert sound
+
+            falseAlarmSound.pause();
+            falseAlarmSound.currentTime = 0; // Reset false alarm sound
         }
 
         function logout() {
