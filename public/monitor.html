@@ -116,8 +116,9 @@
         <button onclick="closeModal()">OK</button>
     </div>
 
-    <!-- 🔊 Emergency Alert Sound -->
+    <!-- 🔊 Emergency & False Alarm Alert Sounds -->
     <audio id="alertSound" src="alert.mp3"></audio>
+    <audio id="falseAlarmSound" src="false_alarm.mp3"></audio>
 
     <!-- 🔓 Logout Button -->
     <button id="logoutButton" onclick="logout()">Logout</button>
@@ -132,6 +133,7 @@
         const socket = new WebSocket("wss://h-heas.onrender.com");
         const logContainer = document.getElementById("logContainer");
         const alertSound = document.getElementById("alertSound");
+        const falseAlarmSound = document.getElementById("falseAlarmSound");
         const alertModal = document.getElementById("alertModal");
         const alertMessage = document.getElementById("alertMessage");
 
@@ -151,9 +153,13 @@
 
                 console.log("🚨 Received Alert:", parsedData);
 
-                // 🔊 Play Sound Alert (Loop until modal is closed)
-                alertSound.loop = true;
-                alertSound.play().catch(error => console.error("🔊 Error playing sound:", error));
+                // 🔊 Play different sounds for emergency and false alarm
+                if (parsedData.alert.includes("False Alarm")) {
+                    falseAlarmSound.play().catch(error => console.error("🔊 Error playing false alarm sound:", error));
+                } else {
+                    alertSound.loop = true;
+                    alertSound.play().catch(error => console.error("🔊 Error playing sound:", error));
+                }
 
                 // ✅ Show Custom Alert Modal
                 alertMessage.innerText = `🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`;
@@ -166,31 +172,20 @@
                     logContainer.appendChild(logEntry);
                     logContainer.scrollTop = logContainer.scrollHeight;
                 }
-
-                // ✅ Auto-Reply from Monitoring Base
-                const replyMessage = {
-                    recipient: parsedData.sender, 
-                    response: "This is the Balidbid Barangay Hall Personnel. We have received your emergency signal, and help is on the way!"
-                };
-                socket.send(JSON.stringify(replyMessage));
-                console.log("✅ Reply sent:", replyMessage);
-
             } catch (error) {
                 console.error("❌ Error processing WebSocket message:", error);
             }
         };
 
-        socket.onclose = () => console.log("❌ Disconnected from WebSocket.");
-
         function closeModal() {
             alertModal.style.display = "none";
             alertSound.pause();
-            alertSound.currentTime = 0; // Reset sound
+            alertSound.currentTime = 0;
         }
 
         function logout() {
-            sessionStorage.removeItem("loggedIn"); // Clear session
-            window.location.href = "login.html"; // Redirect to login
+            sessionStorage.removeItem("loggedIn");
+            window.location.href = "login.html";
         }
     </script>
 </body>
