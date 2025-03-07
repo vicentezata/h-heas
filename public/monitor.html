@@ -126,7 +126,7 @@
         // ✅ Restrict Direct Access to this Page
         if (sessionStorage.getItem("loggedIn") !== "true") {
             alert("❌ Access Denied! Please login first.");
-            window.location.href = "index.html"; // Redirect to login page
+            window.location.href = "login.html"; // Redirect to login page
         }
 
         const socket = new WebSocket("wss://h-heas.onrender.com");
@@ -189,20 +189,9 @@
         }
 
         function logout() {
-            sessionStorage.removeItem("loggedIn");
-            window.location.href = "index.html"; // Redirect to login
+            sessionStorage.removeItem("loggedIn"); // Clear session
+            window.location.href = "login.html"; // Redirect to login
         }
-        // ✅ Restrict Direct Access to this Page
-if (sessionStorage.getItem("loggedIn") !== "true") {
-    alert("❌ Access Denied! Please login first.");
-    window.location.href = "login.html"; // Redirect to login page
-}
-<button onclick="logout()">Logout</button>
-function logout() {
-    sessionStorage.removeItem("loggedIn"); // Clear session
-    window.location.href = "login.html"; // Redirect to login
-}
-
     </script>
 </body>
 </html>
