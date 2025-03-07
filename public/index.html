@@ -79,6 +79,19 @@
     <h1>Welcome to H-HEAS</h1>
     <p>House-to-House Emergency Alert System (H-HEAS) is a project designed by a high school student to enhance emergency communication between households and responders.</p>
 
-    <a href="monitor.html" class="btn">📡 Monitoring Base</a>
+    <button class="btn" onclick="login()">📡 Monitoring Base</button>
+
+    <script>
+        function login() {
+            const username = prompt("Enter Username:");
+            const password = prompt("Enter Password:");
+            
+            if (username === "H-HEAS" && password === "BALIDBID") {
+                window.location.href = "monitor.html";
+            } else {
+                alert("❌ Incorrect Username or Password!");
+            }
+        }
+    </script>
 </body>
 </html>
