@@ -34,6 +34,11 @@
             animation: fadeIn 1.5s ease-in-out;
         }
 
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
         #logContainer {
             width: 90%;
             max-width: 600px;
@@ -47,6 +52,56 @@
             text-align: left;
             color: white;
         }
+
+        .log-entry {
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* ✅ Custom Alert Modal */
+        #alertModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #alertModal button {
+            font-size: 16px;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: #ff5722;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        #alertModal button:hover {
+            background: #ff3d00;
+        }
+
+        /* Logout Button */
+        #logoutButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #d32f2f;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        #logoutButton:hover {
+            background: #b71c1c;
+        }
     </style>
 </head>
 <body>
@@ -55,11 +110,87 @@
     <p>Monitoring Base - Waiting for emergency signals...</p>
     <div id="logContainer"></div>
 
+    <!-- ✅ Hidden Alert Modal -->
+    <div id="alertModal">
+        <p id="alertMessage">🚨 Emergency Alert Received!</p>
+        <button onclick="closeModal()">OK</button>
+    </div>
+
+    <!-- 🔊 Emergency Alert Sound -->
+    <audio id="alertSound" src="alert.mp3"></audio>
+
+    <!-- 🔓 Logout Button -->
+    <button id="logoutButton" onclick="logout()">Logout</button>
+
     <script>
-        // ✅ Check if user is logged in before accessing the page
+        // ✅ Restrict Direct Access to this Page
         if (sessionStorage.getItem("loggedIn") !== "true") {
             alert("❌ Access Denied! Please login first.");
             window.location.href = "index.html"; // Redirect to login page
+        }
+
+        const socket = new WebSocket("wss://h-heas.onrender.com");
+        const logContainer = document.getElementById("logContainer");
+        const alertSound = document.getElementById("alertSound");
+        const alertModal = document.getElementById("alertModal");
+        const alertMessage = document.getElementById("alertMessage");
+
+        socket.onopen = () => {
+            console.log("✅ Connected to WebSocket as Monitoring Base.");
+        };
+
+        socket.onmessage = async (event) => {
+            try {
+                const data = await event.data.text();
+                const parsedData = JSON.parse(data);
+
+                if (!parsedData.sender || !parsedData.alert) {
+                    console.warn("⚠️ Invalid alert received:", parsedData);
+                    return;
+                }
+
+                console.log("🚨 Received Alert:", parsedData);
+
+                // 🔊 Play Sound Alert (Loop until modal is closed)
+                alertSound.loop = true;
+                alertSound.play().catch(error => console.error("🔊 Error playing sound:", error));
+
+                // ✅ Show Custom Alert Modal
+                alertMessage.innerText = `🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`;
+                alertModal.style.display = "block";
+
+                if (logContainer) {
+                    const logEntry = document.createElement("div");
+                    logEntry.classList.add("log-entry");
+                    logEntry.innerText = `🕒 ${new Date().toLocaleTimeString()} - 🚨 ${parsedData.sender} ${parsedData.alert}`;
+                    logContainer.appendChild(logEntry);
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                }
+
+                // ✅ Auto-Reply from Monitoring Base
+                const replyMessage = {
+                    recipient: parsedData.sender, 
+                    response: "This is the Balidbid Barangay Hall Personnel. We have received your emergency signal, and help is on the way!"
+                };
+                socket.send(JSON.stringify(replyMessage));
+                console.log("✅ Reply sent:", replyMessage);
+
+            } catch (error) {
+                console.error("❌ Error processing WebSocket message:", error);
+            }
+        };
+
+        socket.onclose = () => console.log("❌ Disconnected from WebSocket.");
+
+        function closeModal() {
+            alertModal.style.display = "none";
+            alertSound.pause();
+            alertSound.currentTime = 0; // Reset sound
+        }
+
+        function logout() {
+            sessionStorage.removeItem("loggedIn");
+            window.location.href = "index.html"; // Redirect to login
         }
     </script>
 </body>
