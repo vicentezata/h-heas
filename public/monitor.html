@@ -170,7 +170,7 @@
                  // ✅ SEND AUTOMATIC REPLY BACK TO SENDER
             const replyMessage = {
                 recipient: parsedData.sender, 
-                response: "Help is on the way!"
+                response: "This is the Barangay Balidbid Emergency Response Team. We have received your emergency alert and have dispatched assistance to your location. Help is on the way and will arrive shortly. Please stay safe and, if possible, remain in a secure area until our team arrives."
             };
             socket.send(JSON.stringify(replyMessage));
             console.log("✅ Reply sent:", replyMessage);
