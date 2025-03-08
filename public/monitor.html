@@ -167,13 +167,13 @@
                     logContainer.scrollTop = logContainer.scrollHeight;
                 }
 
-                const response = {
-                    recipient: parsedData.sender,
-                    message: `📢 Monitoring Base has received your alert: ${parsedData.alert}`,
-                    timestamp: new Date().toISOString()
-                };
-                socket.send(JSON.stringify(response));
-                console.log("✅ Sent response:", response);
+                 // ✅ SEND AUTOMATIC REPLY BACK TO SENDER
+            const replyMessage = {
+                recipient: parsedData.sender, 
+                response: "Help is on the way!"
+            };
+            socket.send(JSON.stringify(replyMessage));
+            console.log("✅ Reply sent:", replyMessage);
             } catch (error) {
                 console.error("❌ Error processing WebSocket message:", error);
             }
