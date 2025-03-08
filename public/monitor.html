@@ -5,7 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Base</title>
     <style>
-        /* Existing CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            height: 100vh;
+            background: linear-gradient(-45deg, #ff4e50, #fc913a, #f9d423, #8bc34a);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        #logContainer {
+            width: 90%;
+            max-width: 600px;
+            height: 300px;
+            margin: 20px auto;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            background: rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            text-align: left;
+            color: white;
+        }
+
+        .log-entry {
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #alertModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #alertModal button {
+            font-size: 16px;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: #ff5722;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        #alertModal button:hover {
+            background: #ff3d00;
+        }
+
+        #logoutButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #d32f2f;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        #logoutButton:hover {
+            background: #b71c1c;
+        }
     </style>
 </head>
 <body>
@@ -37,8 +131,6 @@
         const alertModal = document.getElementById("alertModal");
         const alertMessage = document.getElementById("alertMessage");
 
-        let currentSender = ""; // To store the sender's information
-
         socket.onopen = () => {
             console.log("✅ Connected to WebSocket as Monitoring Base.");
         };
@@ -54,8 +146,6 @@
                 }
 
                 console.log("🚨 Received Alert:", parsedData);
-
-                currentSender = parsedData.sender; // Store the sender's information
 
                 if (parsedData.alert.includes("False Alarm")) {
                     falseAlarmSound.loop = true;
@@ -76,6 +166,14 @@
                     logContainer.appendChild(logEntry);
                     logContainer.scrollTop = logContainer.scrollHeight;
                 }
+
+                 // ✅ SEND AUTOMATIC REPLY BACK TO SENDER
+            const replyMessage = {
+                recipient: parsedData.sender, 
+                response: "This is the Barangay Balidbid Emergency Response Team. We have received your emergency alert and have dispatched assistance to your location. Help is on the way and will arrive shortly. Please stay safe and, if possible, remain in a secure area until our team arrives."
+            };
+            socket.send(JSON.stringify(replyMessage));
+            console.log("✅ Reply sent:", replyMessage);
             } catch (error) {
                 console.error("❌ Error processing WebSocket message:", error);
             }
@@ -87,18 +185,6 @@
             alertSound.currentTime = 0;
             falseAlarmSound.pause();
             falseAlarmSound.currentTime = 0;
-
-            // Send automatic reply back to sender
-            if (currentSender) {
-                const replyMessage = {
-                    recipient: currentSender,
-                    response: "This is the Barangay Balidbid Emergency Response Team. We have received your emergency alert and have dispatched assistance to your location. Help is on the way and will arrive shortly. Please stay safe and, if possible, remain in a secure area until our team arrives."
-                };
-                socket.send(JSON.stringify(replyMessage));
-                console.log("✅ Reply sent:", replyMessage);
-            } else {
-                console.warn("⚠️ No sender information available to send a reply.");
-            }
         }
 
         function logout() {
