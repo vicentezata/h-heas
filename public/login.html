@@ -26,17 +26,24 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
+        /* Centering the form */
+        .form-container {
+            display: flex;
+            justify-content: center;
+        }
+
         form {
             background: rgba(0, 0, 0, 0.5);
             padding: 20px;
             border-radius: 10px;
-            display: inline-block;
+            width: 100%;
+            max-width: 300px; /* Adjust the max-width as needed */
         }
 
         input {
             display: block;
             width: 100%;
-            margin: 10px 0;
+            margin: 5px 0; /* Reduced vertical spacing */
             padding: 10px;
             border-radius: 5px;
             border: none;
@@ -66,11 +73,13 @@
 </head>
 <body>
     <h2>H-HEAS Login</h2>
-    <form onsubmit="return loginUser()">
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-    </form>
+    <div class="form-container">
+        <form onsubmit="return loginUser()">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
     <p class="error" id="errorMessage"></p>
 
     <script>
