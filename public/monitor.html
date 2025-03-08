@@ -5,191 +5,172 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Base</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-            height: 100vh;
-            background: linear-gradient(-45deg, #ff4e50, #fc913a, #f9d423, #8bc34a);
-            background-size: 400% 400%;
-            animation: gradientBG 10s ease infinite;
+        /* Existing CSS styles */
+
+        /* Layout adjustments for sidebar and main content */
+        .container {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
+            height: 100vh;
+            width: 100%;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        h2 {
-            font-size: 22px;
-            font-weight: bold;
-            text-transform: uppercase;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 1.5s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(-10px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        #logContainer {
-            width: 90%;
-            max-width: 600px;
-            height: 300px;
-            margin: 20px auto;
-            padding: 10px;
-            border-radius: 10px;
-            border: 2px solid #fff;
-            background: rgba(0, 0, 0, 0.3);
-            overflow-y: auto;
-            text-align: left;
-            color: white;
-        }
-
-        .log-entry {
-            padding: 5px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        #alertModal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.5);
             padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
         }
 
-        #alertModal button {
-            font-size: 16px;
-            margin-top: 10px;
-            padding: 10px 15px;
-            background: #ff5722;
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+
+        .household-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .household-list li {
+            margin-bottom: 10px;
+        }
+
+        .household-list button {
+            width: 100%;
+            padding: 10px;
+            background: #8bc34a;
             border: none;
             border-radius: 5px;
             color: white;
             cursor: pointer;
+            text-align: left;
         }
 
-        #alertModal button:hover {
-            background: #ff3d00;
+        .household-list button:hover {
+            background: #7cb342;
         }
 
-        #logoutButton {
+        .household-info {
+            display: none;
             margin-top: 20px;
-            padding: 10px 20px;
-            background: #d32f2f;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            cursor: pointer;
+            text-align: left;
         }
 
-        #logoutButton:hover {
-            background: #b71c1c;
+        .household-info h3 {
+            margin-top: 0;
         }
     </style>
 </head>
 <body>
-    <h2>House to House Emergency Alert System</h2>
-    <h2>( H - H E A S )</h2>
-    <p>Monitoring Base - Waiting for emergency signals...</p>
-    <div id="logContainer"></div>
+    <div class="container">
+        <!-- Sidebar with Household List -->
+        <div class="sidebar">
+            <h2>Households</h2>
+            <ul class="household-list">
+                <li><button onclick="showInfo('h1')">H1 – Zata Family</button></li>
+                <li><button onclick="showInfo('h2')">H2 – Illustrisimo Family</button></li>
+                <li><button onclick="showInfo('h3')">H3 – Fernandez Family</button></li>
+            </ul>
+        </div>
 
-    <div id="alertModal">
-        <p id="alertMessage">🚨 Emergency Alert Received!</p>
-        <button onclick="closeModal()">OK</button>
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <h2>House to House Emergency Alert System</h2>
+            <h2>( H - H E A S )</h2>
+            <p>Monitoring Base - Waiting for emergency signals...</p>
+            <div id="logContainer"></div>
+
+            <!-- Household Information Display -->
+            <div id="householdInfo" class="household-info">
+                <!-- Information will be populated here -->
+            </div>
+
+            <!-- Alert Modal -->
+            <div id="alertModal">
+                <p id="alertMessage">🚨 Emergency Alert Received!</p>
+                <button onclick="closeModal()">OK</button>
+            </div>
+
+            <!-- Audio Elements -->
+            <audio id="alertSound" src="alert.mp3"></audio>
+            <audio id="falseAlarmSound" src="false_alarm.mp3"></audio>
+
+            <!-- Logout Button -->
+            <button id="logoutButton" onclick="logout()">Logout</button>
+        </div>
     </div>
 
-    <audio id="alertSound" src="alert.mp3"></audio>
-    <audio id="falseAlarmSound" src="false_alarm.mp3"></audio>
-
-    <button id="logoutButton" onclick="logout()">Logout</button>
-
     <script>
-        if (sessionStorage.getItem("loggedIn") !== "true") {
-            alert("❌ Access Denied! Please login first.");
-            window.location.href = "login.html";
-        }
+        // Existing JavaScript code
 
-        const socket = new WebSocket("wss://h-heas.onrender.com");
-        const logContainer = document.getElementById("logContainer");
-        const alertSound = document.getElementById("alertSound");
-        const falseAlarmSound = document.getElementById("falseAlarmSound");
-        const alertModal = document.getElementById("alertModal");
-        const alertMessage = document.getElementById("alertMessage");
-
-        socket.onopen = () => {
-            console.log("✅ Connected to WebSocket as Monitoring Base.");
-        };
-
-        socket.onmessage = async (event) => {
-            try {
-                const data = await event.data.text();
-                const parsedData = JSON.parse(data);
-
-                if (!parsedData.sender || !parsedData.alert) {
-                    console.warn("⚠️ Invalid alert received:", parsedData);
-                    return;
-                }
-
-                console.log("🚨 Received Alert:", parsedData);
-
-                if (parsedData.alert.includes("False Alarm")) {
-                    falseAlarmSound.loop = true;
-                    falseAlarmSound.play().catch(error => console.error("🔊 Error playing false alarm sound:", error));
-                    alertMessage.innerText = `⚠️ False Alarm - ${parsedData.sender} ${parsedData.alert}`;
-                } else {
-                    alertSound.loop = true;
-                    alertSound.play().catch(error => console.error("🔊 Error playing emergency sound:", error));
-                    alertMessage.innerText = `🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`;
-                }
-
-                alertModal.style.display = "block";
-
-                if (logContainer) {
-                    const logEntry = document.createElement("div");
-                    logEntry.classList.add("log-entry");
-                    logEntry.innerText = `🕒 ${new Date().toLocaleTimeString()} - 🚨 ${parsedData.sender} ${parsedData.alert}`;
-                    logContainer.appendChild(logEntry);
-                    logContainer.scrollTop = logContainer.scrollHeight;
-                }
-
-                 // ✅ SEND AUTOMATIC REPLY BACK TO SENDER
-            const replyMessage = {
-                recipient: parsedData.sender, 
-                response: "This is the Barangay Balidbid Emergency Response Team. We have received your emergency alert and have dispatched assistance to your location. Help is on the way and will arrive shortly. Please stay safe and, if possible, remain in a secure area until our team arrives."
-            };
-            socket.send(JSON.stringify(replyMessage));
-            console.log("✅ Reply sent:", replyMessage);
-            } catch (error) {
-                console.error("❌ Error processing WebSocket message:", error);
+        // Household information data
+        const households = {
+            h1: {
+                name: "Zata Family",
+                father: "Vicente A. Zata",
+                mother: "Bonievie V. Zata",
+                siblings: ["Elijah V. Zata", "Eleonor V. Zata"],
+                contacts: [
+                    "Cell #: 09227985233",
+                    "Cell #: 09451173278",
+                    "FB: Vicente Zata",
+                    "FB: Bonievie Villanueva Zata",
+                    "FB: Elijah Zata",
+                    "FB: Eleonor Zata"
+                ]
+            },
+            h2: {
+                name: "Illustrisimo Family",
+                father: "Mr. Illustrisimo",
+                mother: "Mrs. Illustrisimo",
+                siblings: ["King Andrie Illustrisimo", "Brother", "Sister"],
+                contacts: [
+                    "Cell #: ",
+                    "Cell #: ",
+                    "FB: ",
+                    "FB: ",
+                    "FB: ",
+                    "FB: "
+                ]
+            },
+            h3: {
+                name: "Fernandez Family",
+                father: "Mr. Fernandez",
+                mother: "Mrs. Fernandez",
+                siblings: ["Kyla Marie Fernandez", "Brother", "Sister"],
+                contacts: [
+                    "Cell #: ",
+                    "Cell #: ",
+                    "FB: ",
+                    "FB: ",
+                    "FB: ",
+                    "FB: "
+                ]
             }
         };
 
-        function closeModal() {
-            alertModal.style.display = "none";
-            alertSound.pause();
-            alertSound.currentTime = 0;
-            falseAlarmSound.pause();
-            falseAlarmSound.currentTime = 0;
-        }
+        // Function to display household information
+        function showInfo(householdId) {
+            const infoContainer = document.getElementById('householdInfo');
+            const household = households[householdId];
 
-        function logout() {
-            sessionStorage.removeItem("loggedIn");
-            window.location.href = "login.html";
+            if (household) {
+                infoContainer.innerHTML = `
+                    <h3>${household.name}</h3>
+                    <p><strong>Father:</strong> ${household.father}</p>
+                    <p><strong>Mother:</strong> ${household.mother}</p>
+                    <p><strong>Siblings:</strong></p>
+                    <ul>
+                        ${household.siblings.map(sibling => `<li>${sibling}</li>`).join('')}
+                    </ul>
+                    <p><strong>Contact Information:</strong></p>
+                    <ul>
+                        ${household.contacts.map(contact => `<li>${contact}</li>`).join('')}
+                    </ul>
+                `;
+                infoContainer.style.display = 'block';
+            }
         }
     </script>
 </body>
