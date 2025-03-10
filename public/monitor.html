@@ -148,60 +148,57 @@ BIRTHING ASSISTANCE & PATIENT TRANSPORT TO MAINLAND CEBU: </br>
             console.log("✅ Connected to WebSocket as Monitoring Base.");
         };
 
-        socket.onmessage = async (event) => {
-            try {
-                const data = await event.data.text();
-                const parsedData = JSON.parse(data);
+socket.onmessage = async (event) => {
+    try {
+        const data = await event.data.text();
+        const parsedData = JSON.parse(data);
 
-                if (!parsedData.sender || !parsedData.alert) {
-                    console.warn("⚠️ Invalid alert received:", parsedData);
-                    return;
-                }
+        if (!parsedData.sender || !parsedData.alert) {
+            console.warn("⚠️ Invalid alert received:", parsedData);
+            return;
+        }
 
-                console.log("🚨 Received Alert:", parsedData);
+        console.log("🚨 Received Alert:", parsedData);
 
-                if (parsedData.alert.includes("False Alarm")) {
-                    falseAlarmSound.loop = true;
-                    falseAlarmSound.play().catch(error => console.error("🔊 Error playing false alarm sound:", error));
-                    alertMessage.innerText = `⚠️ False Alarm - ${parsedData.sender} ${parsedData.alert}`;
-                } else {
-                    alertSound.loop = true;
-                    alertSound.play().catch(error => console.error("🔊 Error playing emergency sound:", error));
-                    alertMessage.innerText = `🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`;
-                }
+        const isFalseAlarm = parsedData.alert.includes("False Alarm");
 
-                alertModal.style.display = "block";
+        if (isFalseAlarm) {
+            falseAlarmSound.loop = true;
+            falseAlarmSound.play().catch(error => console.error("🔊 Error playing false alarm sound:", error));
+            alertMessage.innerText = `⚠️ False Alarm - ${parsedData.sender} ${parsedData.alert}`;
+        } else {
+            alertSound.loop = true;
+            alertSound.play().catch(error => console.error("🔊 Error playing emergency sound:", error));
+            alertMessage.innerText = `🚨 Emergency Alert - ${parsedData.sender} ${parsedData.alert}`;
+        }
 
-if (logContainer) {
-    const logEntry = document.createElement("div");
-    logEntry.classList.add("log-entry");
+        alertModal.style.display = "block";
 
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
+        if (logContainer) {
+            const logEntry = document.createElement("div");
+            logEntry.classList.add("log-entry");
 
-    const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            const now = new Date();
+            const formattedDateTime = now.toISOString().replace('T', ' ').substring(0, 19);
 
-    logEntry.innerText = `🕒 ${formattedDateTime} - 🚨 ${parsedData.sender} ${parsedData.alert}`;
-    logContainer.appendChild(logEntry);
-    logContainer.scrollTop = logContainer.scrollHeight;
-}
+            logEntry.innerText = `🕒 ${formattedDateTime} - 🚨 ${parsedData.sender} ${parsedData.alert}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
 
-                 // ✅ SEND AUTOMATIC REPLY BACK TO SENDER
+        // ✅ SEND AUTOMATIC REPLY BACK TO SENDER (only if it's not a false alarm)
+        if (!isFalseAlarm) {
             const replyMessage = {
-                recipient: parsedData.sender, 
+                recipient: parsedData.sender,
                 response: "This is the Barangay Balidbid Emergency Response Team. We have received your emergency alert and have dispatched assistance to your location. Help is on the way and will arrive shortly. Please stay safe and, if possible, remain in a secure area until our team arrives."
             };
             socket.send(JSON.stringify(replyMessage));
             console.log("✅ Reply sent:", replyMessage);
-            } catch (error) {
-                console.error("❌ Error processing WebSocket message:", error);
-            }
-        };
+        }
+    } catch (error) {
+        console.error("❌ Error processing WebSocket message:", error);
+    }
+};
 
         function closeModal() {
             alertModal.style.display = "none";
